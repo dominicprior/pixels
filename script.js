@@ -32,41 +32,38 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    // --- STEP 2: Sobel kernels ---
-    const gxKernel = [
-      -1, 0, 1,
-      -2, 0, 2,
-      -1, 0, 1
-    ];
-
-    const gyKernel = [
-      -1, -2, -1,
-       0,  0,  0,
-       1,  2,  1
-    ];
 
     const output = edgeCtx.createImageData(width, height);
     const dst = output.data;
+    const size = 1;  // full size of the kernel is 2*size+1
 
     // --- STEP 3: convolution (skip borders) ---
-    for (let y = 1; y < height - 1; y++) {
-      for (let x = 1; x < width - 1; x++) {
+    let biggestMagnitude = 0;
+    for (let y = size; y < height - size; y++) {
+      for (let x = size; x < width - size; x++) {
         let gx = 0;
         let gy = 0;
 
         let k = 0;
 
-        for (let ky = -1; ky <= 1; ky++) {
-          for (let kx = -1; kx <= 1; kx++) {
+        for (let ky = -size; ky <= size; ky++) {
+          for (let kx = -size; kx <= size; kx++) {
             const pixel = gray[(y + ky) * width + (x + kx)];
-            gx += pixel * gxKernel[k];
-            gy += pixel * gyKernel[k];
+            gx -= pixel * kx;
+            gx += pixel * ky;
             k++;
           }
         }
 
-        // gradient magnitude
-        const magnitude = Math.sqrt(gx * gx + gy * gy);
+        if (gx < 0) {
+          gx = 0;
+        }
+        const magnitude = gx * 0.45;
+
+        if (magnitude > biggestMagnitude) {
+          biggestMagnitude = magnitude;
+          console.log(biggestMagnitude);
+        }
 
         const idx = (y * width + x) * 4;
         const edge = Math.min(255, magnitude);
