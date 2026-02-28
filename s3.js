@@ -14,7 +14,6 @@ window.addEventListener("DOMContentLoaded", () => {
     for (let x = 0; x < width; x++) {
       const idx = (y * width + x) * 4;
       const xx = x % 20 > 10;
-      // const yy = x % 10 > 5;
       const yy = y % 20 > 10;
       const relx = x - width / 2;
       const rely = y - width / 2;
