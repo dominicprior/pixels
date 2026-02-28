@@ -1,60 +1,54 @@
 window.addEventListener("DOMContentLoaded", () => {
   const img = document.getElementById("sourceImg");
-  const originalCanvas = document.getElementById("originalCanvas");
+  const origCanvas = document.getElementById("origCanvas");
   const edgeCanvas = document.getElementById("edgeCanvas");
 
   img.onload = () => {
-    const width = img.width;
-    const height = img.height;
+    const w = img.width;
+    const h = img.height;
 
-    originalCanvas.width = edgeCanvas.width = width;
-    originalCanvas.height = edgeCanvas.height = height;
+    origCanvas.width = edgeCanvas.width = w;
+    origCanvas.height = edgeCanvas.height = h;
 
-    const origCtx = originalCanvas.getContext("2d");
+    const origCtx = origCanvas.getContext("2d");
     const edgeCtx = edgeCanvas.getContext("2d");
 
-    // Draw original
+    // draw an image onto the canvas
     origCtx.drawImage(img, 0, 0);
 
-    const srcData = origCtx.getImageData(0, 0, width, height);
+    const srcData = origCtx.getImageData(0, 0, w, h);
     const src = srcData.data;
 
-    // --- STEP 1: convert to grayscale buffer ---
-    const gray = new Float32Array(width * height);
+    // --- convert to grayscale buffer ---
+    const gray = new Float32Array(w * h);
 
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        const i = (y * width + x) * 4;
-        gray[y * width + x] =
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        const i = (y * w + x) * 4;
+        gray[y * w + x] =
           0.299 * src[i] +
           0.587 * src[i + 1] +
           0.114 * src[i + 2];
       }
     }
 
-
-    const output = edgeCtx.createImageData(width, height);
-    const dst = output.data;
-    const size = 1;  // full size of the kernel is 2*size+1
+    const imageDataObj = edgeCtx.createImageData(w, h);  // blank
+    const imageData = imageDataObj.data;
 
     // --- STEP 3: convolution (skip borders) ---
     let biggestMagnitude = 0;
-    for (let y = size; y < height - size; y++) {
-      for (let x = size; x < width - size; x++) {
+    for (let y = 1; y < h - 1; y++) {
+      for (let x = 1; x < w - 1; x++) {
         let gx = 0;
         let gy = 0;
 
-        let k = 0;
-
-        for (let ky = -size; ky <= size; ky++) {
-          for (let kx = -size; kx <= size; kx++) {
-            const pixel = gray[(y + ky) * width + (x + kx)];
+        for (let ky = -1; ky <= 1; ky++) {
+          for (let kx = -1; kx <= 1; kx++) {
+            const pixel = gray[(y + ky) * w + (x + kx)];
             gx -= pixel * kx;
             gx += pixel * ky;
-            k++;
           }
         }
-
         if (gx < 0) {
           gx = 0;
         }
@@ -65,18 +59,17 @@ window.addEventListener("DOMContentLoaded", () => {
           console.log(biggestMagnitude);
         }
 
-        const idx = (y * width + x) * 4;
+        const idx = (y * w + x) * 4;
         const edge = Math.min(255, magnitude);
 
-        dst[idx] = edge;
-        dst[idx + 1] = edge;
-        dst[idx + 2] = edge;
-        dst[idx + 3] = 255;
+        imageData[idx] = edge;
+        imageData[idx + 1] = edge;
+        imageData[idx + 2] = edge;
+        imageData[idx + 3] = 255;
       }
     }
 
-    // --- STEP 4: draw result ---
-    edgeCtx.putImageData(output, 0, 0);
+    edgeCtx.putImageData(imageDataObj, 0, 0);
   };
 
   if (img.complete) img.onload();
