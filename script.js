@@ -51,20 +51,21 @@ window.addEventListener("DOMContentLoaded", () => {
     let biggestMagnitude = 0;
     for (let y = 1; y < h - 1; y++) {
       for (let x = 1; x < w - 1; x++) {
-        let gx = 0;
-        let gy = 0;
+        let g = 0;
+        let k = 0;
 
         for (let ky = -1; ky <= 1; ky++) {
           for (let kx = -1; kx <= 1; kx++) {
             const pixel = gray[(y + ky) * w + (x + kx)];
-            gx -= pixel * kx;
-            gx += pixel * ky;
+            g -= pixel * gxKernel[k];
+            g += pixel * gyKernel[k];
+            k++;
           }
         }
-        if (gx < 0) {
-          gx = 0;
+        if (g < 0) {
+          g = 0;
         }
-        const magnitude = gx * 0.45;
+        const magnitude = g * 0.45;
 
         if (magnitude > biggestMagnitude) {
           biggestMagnitude = magnitude;
