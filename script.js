@@ -32,6 +32,18 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    const gxKernel = [
+      -1, 0, 1,
+      -2, 0, 2,
+      -1, 0, 1
+    ];
+
+    const gyKernel = [
+      -1, -2, -1,
+       0,  0,  0,
+       1,  2,  1
+    ];
+
     const imageDataObj = edgeCtx.createImageData(w, h);  // blank
     const imageData = imageDataObj.data;
 
